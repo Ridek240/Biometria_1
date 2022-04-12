@@ -45,6 +45,7 @@ namespace Biometria_1
             old = new OldWindow();
             UpdateImage();
 
+            DataCenter dataCenter = new DataCenter();
         }
 
         private void OpenOld(object sender, RoutedEventArgs e)
