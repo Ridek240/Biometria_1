@@ -31,7 +31,12 @@
         </Grid>
         
         <Grid ShowGridLines="True" Grid.Row="3" VerticalAlignment="Center" >
-            <Button Click="OpenOld">Old</Button>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Click="OpenOld" Grid.Column="0">Old</Button>
+            <Button Click="OpenKlasyfikacja" Grid.Column="1">Klasyfikacja</Button>
         </Grid>
     </Grid>
 </Window>

@@ -45,7 +45,7 @@ namespace Biometria_1
             old = new OldWindow();
             UpdateImage();
 
-            DataCenter dataCenter = new DataCenter();
+            //DataCenter dataCenter = new DataCenter();
         }
 
         private void OpenOld(object sender, RoutedEventArgs e)
@@ -171,6 +171,12 @@ namespace Biometria_1
         private void Flood_Checked(object sender, RoutedEventArgs e)
         {
             isFloodType = Flood.IsChecked.Value;
+        }
+
+        private void OpenKlasyfikacja(object sender, RoutedEventArgs e)
+        {
+            Klasification klasification = new Klasification();
+            klasification.ShowDialog();
         }
     }
 }
