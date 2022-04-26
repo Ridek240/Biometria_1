@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Biometria_1
 {
-    class DataGroup
+    public class DataGroup
     {
         public string Name;
         public List<KeyStroke> keyStrokes = new List<KeyStroke>();

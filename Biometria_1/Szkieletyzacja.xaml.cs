@@ -26,24 +26,6 @@ namespace Biometria_1
         {
             InitializeComponent();
         }
-        public Bitmap KMM(Bitmap bitmap)
-        {
-            for (int x = 0; x < bitmap.Width; x++)
-            {
-                for (int y = 0; y < bitmap.Height; y++)
-                {
-                    System.Drawing.Color color = bitmap.GetPixel(x, y);
-                    if (color == System.Drawing.Color.FromArgb(255, 255, 255))
-                    {
-                        IllegalPixels.Add(x, y, 1);
-                    }
-                }
-            }
-
-            return bitmap;
-
-        }
-
     }
 
     public class Points

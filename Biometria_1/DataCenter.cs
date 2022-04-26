@@ -31,7 +31,8 @@ namespace Biometria_1
                     {
                         Key = subs[0],
                         Val1 = int.Parse(subs[1]),
-                        Val2 = int.Parse(subs[2])
+                        Val2 = int.Parse(subs[2]),
+                        DataGroup = dataGroup
                     };
                     dataGroup.keyStrokes.Add(keyStroke);
                 }
@@ -39,6 +40,18 @@ namespace Biometria_1
             }
         }
 
+        public List<KeyStroke> GetKeyStrokesList()
+        {
+            List<KeyStroke> result = new List<KeyStroke>();
+            foreach (DataGroup group in dataGroups)
+            {
+                foreach (KeyStroke keyStroke in group.keyStrokes)
+                {
+                    result.Add(keyStroke);
+                }
+            }
+            return result;
+        }
 
         public DataGroup GetDataGroup(string name)
         {

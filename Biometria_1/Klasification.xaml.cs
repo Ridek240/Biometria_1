@@ -25,7 +25,15 @@ namespace Biometria_1
         {
             InitializeComponent();
             //Random random = new Random();
-            Losowanko(random);
+            //Losowanko(random);
+            Randomizer();
+        }
+
+        private void Randomizer()
+        {
+            List<List<KeyStroke>> keyStrokes = GetRandom2(0.05f);
+            List<List<OutputData>> resultKnn = knn(keyStrokes, knnDistance1);
+            KNN.Text = ShowData(resultKnn, keyStrokes[0]);
         }
 
         private void Losowanko(Random random)
@@ -37,7 +45,7 @@ namespace Biometria_1
             V2.Content = key.Val2;
             List<OutputGroup> Group1 = knn(keys);
             //List<OutputGroup> Group2 = NaiveBayes(keys);
-            KNN.Content = ShowData(Group1, 20);
+            KNN.Text = ShowData(Group1, 20);
             //NB.Content = ShowData(Group2, 20);
         }
 
@@ -71,6 +79,28 @@ namespace Biometria_1
                 }
             }
             
+            return result;
+        }
+
+        public List<List<KeyStroke>> GetRandom2(float part)
+        {
+            List<List<KeyStroke>> result = new List<List<KeyStroke>>();
+
+            List<KeyStroke> keyStrokes = dataCenter.GetKeyStrokesList();
+
+            // Testing
+            List<KeyStroke> testing = new List<KeyStroke>();
+            for (int k = 0; k < GetSize() * part; k++)
+            {
+                int r = random.Next(0, keyStrokes.Count);
+                testing.Add(keyStrokes[r]);
+                keyStrokes.RemoveAt(r);
+            }
+            result.Add(testing);
+
+            // Training
+            result.Add(keyStrokes);
+
             return result;
         }
 
@@ -148,6 +178,7 @@ namespace Biometria_1
             return returnstring + " %" + a.ToString();
         }
 
+
         public List<OutputGroup> knn(List<KeyStroke> keys)
         {
             List<OutputGroup> Group = new List<OutputGroup>();
@@ -172,6 +203,59 @@ namespace Biometria_1
                 }
             }
             return Group;
+        }
+
+        public string ShowData(List<List<OutputData>> data, List<KeyStroke> testing)
+        {
+            string result = "";
+            int i = 0;
+            foreach (List<OutputData> test in data)
+            {
+                result += i + " Testing key " + testing[i] + "\n";
+                double min = double.MaxValue;
+                OutputData minData = new OutputData();
+                foreach (OutputData data1 in test)
+                {
+                    if (min > data1.distance)
+                    {
+                        minData = data1;
+                        min = data1.distance;
+                    }
+                }
+                result += minData + ", \n\n";
+                i++;
+            }
+
+            return result;
+        }
+
+        public List<List<OutputData>> knn(List<List<KeyStroke>> list, knnDistance knnDistance) => knn(list[0], list[1], knnDistance);
+
+        public delegate double knnDistance(KeyStroke Key1, KeyStroke Key2);
+        public List<List<OutputData>> knn(List<KeyStroke> testing, List<KeyStroke> training, knnDistance knnDistance)
+        {
+            List<List<OutputData>> output = new List<List<OutputData>>();
+
+            foreach (KeyStroke test in testing)
+            {
+                List<OutputData> list = new List<OutputData>();
+                foreach (KeyStroke train in training)
+                {
+                    OutputData outputData = new OutputData
+                    {
+                        distance = Math.Sqrt(knnDistance(test, train)),
+                        KeyStroke = train
+                    };
+                    list.Add(outputData);
+                }
+                output.Add(list);
+            }
+            return output;
+        }
+
+        public double knnDistance1(KeyStroke Key1, KeyStroke Key2)
+        {
+            return Math.Pow(Key1.Val1 - Key2.Val1, 2) + Math.Pow(Key1.Val2 - Key2.Val2, 2);
         }
 
 
@@ -207,9 +291,23 @@ namespace Biometria_1
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Losowanko(random);
+            //Losowanko(random);
+            Randomizer();
         }
     }
+
+
+
+    public class OutputData
+    {
+        public double distance;
+        public KeyStroke KeyStroke;
+        public override string ToString()
+        {
+            return "D: " + distance + " " + KeyStroke;
+        }
+    }
+
     public class Output
     {
         public double Distance;

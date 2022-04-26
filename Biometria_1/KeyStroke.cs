@@ -8,6 +8,7 @@ namespace Biometria_1
 {
     public class KeyStroke
     {
+        public DataGroup DataGroup;
         public string Key;
         public int Val1;
         public int Val2;
@@ -23,6 +24,11 @@ namespace Biometria_1
                 }
                 return 0;
             }
+        }
+
+        public override string ToString()
+        {
+            return "G: " + DataGroup.Name + " K:" + Key;
         }
     }
 }
