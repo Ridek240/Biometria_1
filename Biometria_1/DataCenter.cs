@@ -10,6 +10,7 @@ namespace Biometria_1
     class DataCenter
     {
         public List<DataGroup> dataGroups = new List<DataGroup>();
+        public int AttributesCount = 2;
 
         public DataCenter()
         {
@@ -36,6 +37,38 @@ namespace Biometria_1
                 }
                 dataGroups.Add(dataGroup);
             }
+        }
+
+
+        public DataGroup GetDataGroup(string name)
+        {
+            for (int i = 0; i < dataGroups.Count; i++)
+            {
+                if (dataGroups[i].Name.CompareTo(name) == 0) return dataGroups[i];
+            }
+            return null;
+        }
+
+        public List<List<int>> GetValuesLists()
+        {
+            List<List<int>> result = new List<List<int>>();
+            for (int i = 0; i < AttributesCount; i++)
+            {
+                List<int> attribute = new List<int>();
+                result.Add(attribute);
+            }
+            for (int j = 0; j < dataGroups.Count; j++)
+            {
+                for (int k = 0; k < dataGroups[j].keyStrokes.Count; k++)
+                {
+                    for (int i = 0; i < AttributesCount; i++)
+                    {
+                        result[i].Add(dataGroups[j].keyStrokes[k][i]);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -7,6 +7,25 @@
         mc:Ignorable="d"
         Title="Klasification" Height="450" Width="800">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Label Name="N"/>
+            <Label Name="V1"/>
+            <Label Name="V2"/>
+        </StackPanel>
+        <Label Grid.Row="1" Grid.Column="0">KNN</Label>
+        <Label Grid.Row="1" Grid.Column="1" x:Name="KNN"/>
+        <Label Grid.Row="2" Grid.Column="0">Naive Bayes</Label>
+        <Label Grid.Row="2" Grid.Column="1" x:Name="NB"/>
+        <Button Grid.Column="0" Grid.Row="3" Content="Losuj" Click="Button_Click" />
     </Grid>
 </Window>
