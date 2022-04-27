@@ -7,6 +7,19 @@
         mc:Ignorable="d"
         Title="Szkieletyzacja" Height="450" Width="800">
     <Grid>
-        <Image x:Name="ScelResult" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Image x:Name="ScelResult" Grid.Row="0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+        <Grid Grid.Row="1" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Content="KMM" Grid.Column="0" Click="KMM"/>
+            <Button Content="K3M" Grid.Column="1" Click="K3M"/>
+
+        </Grid>
     </Grid>
 </Window>

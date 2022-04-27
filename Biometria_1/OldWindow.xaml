@@ -14,7 +14,7 @@
             <RowDefinition Height="1*"/>
 
         </Grid.RowDefinitions>
-        <Image x:Name="ImageResult" Grid.Row="0"/>
+        <Image x:Name="ImageResult" Grid.Row="0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
         <Label Name="ResultMessage" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         <Grid ShowGridLines="True" Grid.Row="2" VerticalAlignment="Center" Visibility="Collapsed">
             <Grid.ColumnDefinitions>
@@ -76,5 +76,14 @@
             <CheckBox x:Name="KuwaharaCheckBox" Content="Kuwahara" Grid.Column="2" HorizontalAlignment="Center" Click="UpdateImage"/>
             <TextBox x:Name="EnterHell" Grid.Column="3" HorizontalAlignment="Stretch" Height="18" VerticalAlignment="Stretch" Text="0" />
         </Grid>
+        <Grid Grid.Row="3" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Content="KMM" Grid.Column="0" Click="KMM"/>
+                <Button Content="K3M" Grid.Column="1" Click="K3M"/>
+                
+            </Grid>
     </Grid>
 </Window>

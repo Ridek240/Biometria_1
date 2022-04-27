@@ -280,7 +280,10 @@ namespace Biometria_1
             if (int.TryParse(EnterHell.Text, out int hell))
             {
                 if (PixelizationCheckBox.IsChecked.Value)
+                {
                     BitmapResult = FPixel2(BitmapResult, hell);
+                    BitmapResult = OtsuMethod(BitmapResult);
+                }
                 if (MedianCheckBox.IsChecked.Value)
                     BitmapResult = FMedian(BitmapResult, hell);
                 if (KuwaharaCheckBox.IsChecked.Value)
@@ -722,7 +725,7 @@ namespace Biometria_1
             //    bitmapDataout[i] = byte.MaxValue;
             if (w == 0) w = 1;
             int dy = data.Height / w, dx = data.Width / w;
-            byte[] bitmapDataout = new byte[data.Height * data.Stride];
+            byte[] bitmapDataout = new byte[data.Height * data.Stride / w /w];
             for (int j = 0; j < dy; j++)
             {
                 for (int i = 0; i < dx + 1; i++)
@@ -748,24 +751,24 @@ namespace Biometria_1
 
                     sum = Math.Min(sum, byte.MaxValue);
 
-                    for (int x = 0; x < w; x++)
-                    {
-                        for (int y = 0; y < w; y++)
-                        {
-                            int kko = ((i * w + x) + (j * w + y) * (data.Width)) * 3;
-                            if (kko >= bitmapDataIn.Length) break;
-                            bitmapDataout[kko] =
-                                bitmapDataout[kko + 1] =
-                                bitmapDataout[kko + 2] = (byte)sum;
-                        }
-                    }
+
+
+                    int kko2 = ((i) + (j) * (data.Width/w)) * 3;
+                    if (kko2 >= bitmapDataout.Length) break;
+                    bitmapDataout[kko2] =
+                        bitmapDataout[kko2 + 1] =
+                        bitmapDataout[kko2 + 2] = (byte)sum;
                 }
             }
+            Bitmap bitmap1 = new Bitmap(bitmap.Width/w, bitmap.Height/w);
 
             Marshal.Copy(bitmapDataout, 0, data.Scan0, bitmapDataout.Length);
             bitmap.UnlockBits(data);
+            LockBitmap(bitmap1, ref data);
+            Marshal.Copy(bitmapDataout, 0, data.Scan0, bitmapDataout.Length);
+            bitmap1.UnlockBits(data);
 
-            return bitmap;
+            return bitmap1;
         }
 
         public Bitmap FMedian(Bitmap bitmap, int w = 2)
@@ -899,6 +902,19 @@ namespace Biometria_1
             return newbitmap;
         }
 
+        private void KMM(object sender, RoutedEventArgs e)
+        {
+            Szkieletyzacja szkieletyzacja = new Szkieletyzacja();
+            szkieletyzacja.KMM(BitmapResult);
+            szkieletyzacja.ShowDialog();
+        }
+
+        private void K3M(object sender, RoutedEventArgs e)
+        {
+            Szkieletyzacja szkieletyzacja = new Szkieletyzacja();
+            szkieletyzacja.K3M(BitmapResult);
+            szkieletyzacja.ShowDialog();
+        }
     }
 }
 
