@@ -10,20 +10,17 @@ namespace Biometria_1
     {
         public string Name;
         public List<KeyStroke> keyStrokes = new List<KeyStroke>();
-        public int AttributesCount = 2;
-        public List<List<int>> GetAttributes(KeyStroke keyStroke)
+        public List<KeyStroke> GetAttributes(KeyStroke keyStroke)
         {
-            List<List<int>> attributes = new List<List<int>>();
-            for (int i = 0; i < AttributesCount; i++)
+            return GetAttributes(keyStroke, keyStrokes);
+        }
+        public List<KeyStroke> GetAttributes(KeyStroke keyStroke, List<KeyStroke> training)
+        {
+            List<KeyStroke> attributes = new List<KeyStroke>();
+            foreach (KeyStroke key in training)
             {
-                attributes.Add(new List<int>());
-            }
-            for (int i = 0; i < keyStrokes.Count; i++)
-            {
-                for (int j = 0; j < AttributesCount; j++)
-                {
-                    attributes[j].Add(keyStrokes[i][j]);
-                }
+                if (key.DataGroup == keyStroke.DataGroup)
+                    attributes.Add(key);
             }
             return attributes;
         }

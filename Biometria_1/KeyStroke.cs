@@ -12,6 +12,7 @@ namespace Biometria_1
         public string Key;
         public int Val1;
         public int Val2;
+        public static int Count = 2;
 
         public int this[int i]
         {
@@ -29,6 +30,11 @@ namespace Biometria_1
         public override string ToString()
         {
             return "G: " + DataGroup.Name + " K:" + Key;
+        }
+
+        public double Length
+        {
+            get => Math.Sqrt(Math.Pow(Val1, 2) + Math.Pow(Val2, 2));
         }
     }
 }
