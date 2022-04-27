@@ -26,7 +26,7 @@ namespace Biometria_1
     {
         //public readonly static string ImageFilePath = "../../../A.jpg";
         //public readonly static string ImageFilePath = "../../../text2.png";
-        public readonly static string ImageFilePath = "../../../testowy.jpg";
+        public readonly static string ImageFilePath = "../../../yaa.png";
         //public readonly static string ImageFilePath = "../../../Tree.jpg";
         public readonly static string ResultFilePath = "../../../Result.jpg";
 
@@ -175,8 +175,11 @@ namespace Biometria_1
 
         private void OpenKlasyfikacja(object sender, RoutedEventArgs e)
         {
-            Klasification klasification = new Klasification();
-            klasification.ShowDialog();
+            Szkieletyzacja szkieletyzacja = new Szkieletyzacja();
+            szkieletyzacja.KMM(BitmapSrc);
+            szkieletyzacja.ShowDialog();
+           //Klasification klasification = new Klasification();
+           //klasification.ShowDialog();
         }
     }
 }

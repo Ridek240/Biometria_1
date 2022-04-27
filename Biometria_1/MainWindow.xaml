@@ -14,7 +14,7 @@
             <RowDefinition Height="1*"/>
 
         </Grid.RowDefinitions>
-        <Image x:Name="ImageResult" MouseLeftButtonDown="Magic_wand" Grid.Row="0"/>
+        <Image x:Name="ImageResult" MouseLeftButtonDown="Magic_wand" Grid.Row="0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
         <Label Name="ResultMessage" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
