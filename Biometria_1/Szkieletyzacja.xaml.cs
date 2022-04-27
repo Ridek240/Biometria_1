@@ -39,6 +39,9 @@ namespace Biometria_1
 237, 239, 240, 241, 243, 244, 245, 246,
 247, 248, 249, 251, 252, 253, 254, 255};
 
+        public List<int> deleting4 = new List<int> {3,6,12,24,48,96,192,129,7,14,
+        28,65,112,224,193,131,15,30,60,120,240,225,195,135};
+
         public Szkieletyzacja()
         {
             InitializeComponent();
@@ -85,50 +88,51 @@ namespace Biometria_1
 
             //setting 4
             
-          //  foreach (Points point in IllegalPixels)
-          //  {
-          //      if (point.weight > 1)
-          //      {
-          //          int count = 0;
-          //          for (int i = -1; i <= 1; i++)
-          //          {
-          //              for (int j = -1; j <= 1; j++)
-          //              {
-          //                  if (i == 0 && j == 0)
-          //                  {
-          //                      continue;
-          //                  }
-          //                  if (!IllegalPixels.Exists(z => z.x == point.x + i && z.y == point.y + j))
-          //                  {
-          //                      count++;
-          //                  }
-          //              }
-          //          }
-          //          if (count >= 2 && count <= 4)
-          //          {
-          //              point.weight = 4;
-          //          }
-          //      }
-          //  }
-
+            foreach (Points point in IllegalPixels)
+            {
+                if (point.weight > 1)
+                {
+                    int count = 0;
+                    for (int i = -1; i <= 1; i++)
+                    {
+                        for (int j = -1; j <= 1; j++)
+                        {
+                            if (i == 0 && j == 0)
+                            {
+                                continue;
+                            }
+                            if (IllegalPixels.Exists(z => z.x == point.x + i && z.y == point.y + j))
+                            {
+                                count++;
+                            }
+                        }
+                    }
+                    if (count >= 2 && count <= 4)
+                    {
+                        if(deleting4.Exists(x => x == CalculateValues(point)))
+                         point.weight = 4;
+                    }
+                }
+            }
+          
             
 
           List<Points> deletingPixels = new List<Points>();
-           
-     //  //deleting 4
-     //     foreach (Points point in IllegalPixels)
-     //     {
-     //         if(point.weight==4)
-     //         {
-     //             deletingPixels.Add(point);
-     //         }
-     //     }
-     //     foreach (Points point in deletingPixels)
-     //     {
-     //         IllegalPixels.Remove(point);
-     //     }
+          
+       //deleting 4
+          foreach (Points point in IllegalPixels)
+          {
+              if(point.weight==4)
+              {
+                  deletingPixels.Add(point);
+              }
+          }
+          foreach (Points point in deletingPixels)
+          {
+              IllegalPixels.Remove(point);
+          }
 
-            
+            deletingPixels.Clear();
             int length = IllegalPixels.Count;
             for (int ha = 2; ha <= 3; ha++)
             {
@@ -136,48 +140,21 @@ namespace Biometria_1
                 {
                     Points point = IllegalPixels.FirstOrDefault(x => x.weight == ha%2+2);
                     if (point == null) continue;
-                    int count = 0;
-                    if(IllegalPixels.Exists(z => z.x == point.x && z.y == point.y +1))
+          
+                    if (Deleting.Exists(x => x == CalculateValues(point)))
                     {
-                        count += 1;
-                    }
-                    if (IllegalPixels.Exists(z => z.x+1 == point.x && z.y == point.y + 1))
-                    {
-                        count += 2;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x + 1 && z.y == point.y ))
-                    {
-                        count += 4;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x + 1 && z.y == point.y - 1))
-                    {
-                        count += 8;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x && z.y == point.y - 1))
-                    {
-                        count += 16;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x - 1 && z.y == point.y - 1))
-                    {
-                        count += 32;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x -1 && z.y == point.y))
-                    {
-                        count += 64;
-                    }
-                    if (IllegalPixels.Exists(z => z.x == point.x -1 && z.y == point.y + 1))
-                    {
-                        count += 128;
-                    }
-                    if (Deleting.Exists(x => x == count))
-                    {
+                        
                         IllegalPixels.Remove(point);
                     }
                     else point.weight = 1;
                 }
             }
-
-                Bitmap bitmap2 = new Bitmap(bitmap.Width, bitmap.Height);
+            foreach (Points point in deletingPixels)
+            {
+                IllegalPixels.Remove(point);
+            }
+         
+            Bitmap bitmap2 = new Bitmap(bitmap.Width, bitmap.Height);
             using (Graphics gfx = Graphics.FromImage(bitmap2))
             using (SolidBrush brush = new SolidBrush(System.Drawing.Color.FromArgb(255, 255, 255)))
             {
@@ -186,7 +163,14 @@ namespace Biometria_1
 
             foreach (Points point in IllegalPixels)
             {
+                if(point.weight==1)
                 bitmap2.SetPixel(point.x, point.y, System.Drawing.Color.FromArgb(0, 0, 0));
+                if (point.weight == 2)
+                    bitmap2.SetPixel(point.x, point.y, System.Drawing.Color.FromArgb(0, 0, 255));
+                if (point.weight == 3)
+                    bitmap2.SetPixel(point.x, point.y, System.Drawing.Color.FromArgb(0, 255, 0));
+                if (point.weight == 4)
+                    bitmap2.SetPixel(point.x, point.y, System.Drawing.Color.FromArgb(255, 0, 0));
             }
 
             ScelResult.Source = old.ConvertToImage(bitmap2);
@@ -196,6 +180,44 @@ namespace Biometria_1
 
         }
 
+
+        public int CalculateValues(Points point)
+        {
+            int count = 0;
+            if (IllegalPixels.Exists(z => z.x == point.x && z.y == point.y + 1))
+            {
+                count += 1;
+            }
+            if (IllegalPixels.Exists(z => z.x + 1 == point.x && z.y == point.y + 1))
+            {
+                count += 2;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x + 1 && z.y == point.y))
+            {
+                count += 4;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x + 1 && z.y == point.y - 1))
+            {
+                count += 8;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x && z.y == point.y - 1))
+            {
+                count += 16;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x - 1 && z.y == point.y - 1))
+            {
+                count += 32;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x - 1 && z.y == point.y))
+            {
+                count += 64;
+            }
+            if (IllegalPixels.Exists(z => z.x == point.x - 1 && z.y == point.y + 1))
+            {
+                count += 128;
+            }
+            return count;
+        }
     }
 
     public class Points

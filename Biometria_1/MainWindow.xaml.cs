@@ -26,7 +26,8 @@ namespace Biometria_1
     {
         //public readonly static string ImageFilePath = "../../../A.jpg";
         //public readonly static string ImageFilePath = "../../../text2.png";
-        public readonly static string ImageFilePath = "../../../yaa.png";
+        public readonly static string ImageFilePath = "../../../testowyszkie.png";
+        //public readonly static string ImageFilePath = "../../../yaa.png";
         //public readonly static string ImageFilePath = "../../../Tree.jpg";
         public readonly static string ResultFilePath = "../../../Result.jpg";
 
