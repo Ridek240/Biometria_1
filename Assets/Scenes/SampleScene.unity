@@ -240,11 +240,16 @@ MonoBehaviour:
   renderTexture2: {fileID: 0}
   texture: {fileID: 2800000, guid: 0704dc29f875fc045b5181bf04457ccc, type: 3}
   Camera: {fileID: 519420031}
+  MaskRadius: 1
+  Threshold: 0
   AVG: 0
+  NiBlack: 0
+  MedianF: 1
   ThresholdAVG: 0.5
   ThresholdR: 0.5
   ThresholdG: 0.5
   ThresholdB: 0.5
+  NiBlackThreshold: -0.2
 --- !u!4 &1579608035
 Transform:
   m_ObjectHideFlags: 0

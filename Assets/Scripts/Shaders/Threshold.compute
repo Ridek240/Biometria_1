@@ -1,5 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#pragma kernel Niblack
+#pragma kernel MedianF
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -14,6 +16,12 @@ float thresholdAVG;
 float thresholdR;
 float thresholdG;
 float thresholdB;
+
+float NiblackVar;
+uint2 imageSize;
+
+uint MaskRadius;
+static const uint MaxArraySize = 1089;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -38,4 +46,154 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             newVector.z > thresholdB ? 1 : 0,
             1);
     }
+}
+
+void insertSort(out float neighbours[MaxArraySize], uint length)
+{    
+    float value;
+    uint i, j;
+    for(i = 1; i < length; i++)
+    {
+        value = neighbours[i];
+        for (j = i - 1; j >= 0 && neighbours[j] > value; j--)
+            neighbours[j + 1] = neighbours[j];
+        neighbours[j + 1] = value;
+    }
+}
+
+float Median(float neighbours[MaxArraySize], uint length)
+{
+    if (length == 0)
+        return 0;
+
+    //insertSort(neighbours, length);
+    float value;
+    uint i, j;
+    for (i = 1; i < length; i++)
+    {
+        value = neighbours[i];
+        for (j = i - 1; j >= 0 && neighbours[j] > value; j--)
+            neighbours[j + 1] = neighbours[j];
+        neighbours[j + 1] = value;
+    }
+
+    int halfIndex = length / 2;
+
+    if (length % 2 == 0)
+        return (neighbours[halfIndex] + neighbours[halfIndex - 1]) / 2.0;
+
+    return neighbours[halfIndex];
+}
+
+float Average(float sequence[MaxArraySize], uint length)
+{
+    float result = 0;
+    for (uint i = 0; i < length; i++)
+    {
+        result += sequence[i];
+    }
+    return result / length;
+}
+
+float SumFormSD(float sequence[MaxArraySize], uint length)
+{
+    float result = 0;
+
+    float average = 0;// Average(sequence, length);
+    for (uint i = 0; i < length; i++)
+    {
+        average += sequence[i];
+    }
+    average /= length;
+
+    for (uint i = 0; i < length; i++)
+    {
+        result += pow(sequence[i] - average, 2);
+    }
+    return result;
+}
+
+float standardDeviation(float sequence[MaxArraySize], uint length)
+{
+    float result = 0;
+
+    if (length > 0)
+    {
+        float average = 0;// Average(sequence, length);
+        float sum = 0;
+        for (uint i = 0; i < length; i++)
+        {
+            average += sequence[i];
+        }
+        average /= length;
+
+        for (uint i = 0; i < length; i++)
+        {
+            sum += pow(sequence[i] - average, 2);
+        }
+        //float sum = SumFormSD(sequence, length);
+        result = sqrt(sum / length);
+    }
+    return result;
+}
+
+void GetMask(uint3 id, out float neighbours[MaxArraySize], uint radius)
+{
+    uint i = 0;
+    for (int x = (int)id.x - MaskRadius; x <= (int)(id.x + MaskRadius); x++)
+    {
+        for (int y = (int)id.y - MaskRadius; y <= (int)(id.y + MaskRadius); y++)
+        {
+            if (x < 0 || x >= (int)(imageSize.x) ||
+                y < 0 || y >= (int)(imageSize.y))
+            {
+                neighbours[i++] = 0;
+            }
+            else
+            {
+                float4 newVector = Input[uint2(x, y)];
+                neighbours[i++] = (newVector.x + newVector.y + newVector.z) / 3;
+            }
+        }
+    }
+}
+
+[numthreads(1, 1, 1)]
+void Niblack(uint3 id : SV_DispatchThreadID)
+{
+    float neighbours[MaxArraySize] = (float[MaxArraySize])0;
+
+    // Extract the neighbourhood area
+    GetMask(id, neighbours, MaskRadius);
+
+    // Calculate the mean and standard deviation of the neighbourhood region
+    uint length = MaskRadius * 2 + 1;
+    length *= length;
+    float wBmn = Median(neighbours, length);
+    float wBstd = standardDeviation(neighbours, length);
+
+    // Calculate the threshold value
+    float wBTH = (wBmn + NiblackVar * wBstd);
+
+    // Threshold the pixel
+    float4 newVector2 = Input[id.xy];
+    float a = newVector2.x + newVector2.y + newVector2.z;
+    a /= 3;
+    a = a > wBTH ? 1 : 0;
+    Result[id.xy] = float4(a, a, a, 1);
+}
+
+[numthreads(1, 1, 1)]
+void MedianF(uint3 id : SV_DispatchThreadID)
+{
+    float neighbours[MaxArraySize] = (float[MaxArraySize])0;
+
+    // Extract the neighbourhood area
+    GetMask(id, neighbours, MaskRadius);
+    
+    uint length = MaskRadius * 2 + 1;
+    length *= length;
+    float med = Median(neighbours, length);
+    
+    Result[uint2(id.x, id.y)] = float4(med, med, med, 1);
 }
