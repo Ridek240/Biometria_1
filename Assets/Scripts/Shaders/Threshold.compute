@@ -1,58 +1,35 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+// Kernels
+#pragma kernel Thresholding
 #pragma kernel Niblack
 #pragma kernel MedianF
+#pragma kernel LoGF
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
+// --------------------------------------------------------------------------------------
+// Universal Values
+// --------------------------------------------------------------------------------------
+
+// Output image
 RWTexture2D<float4> Result;
 
+// Input Image
 Texture2D<float4> Input;
-
-bool avg;
-
-float thresholdAVG;
-
-float thresholdR;
-float thresholdG;
-float thresholdB;
-
-float NiblackVar;
 uint2 imageSize;
 
+// Mask radius
 uint MaskRadius;
+// Max mask radius
 static const uint MaxArraySize = 1089;
+static const float PI = 3.14159265f;
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    float4 newVector = Input[id.xy];
-    float a = newVector.x + newVector.y + newVector.z;
-    if (avg)
-    {
-        a /= 3;
-        a = a > thresholdAVG ? 1 : 0;
-        Result[id.xy] = float4(
-            a,
-            a,
-            a,
-            1);
-    }
-    else
-    {
-        Result[id.xy] = float4(
-            newVector.x > thresholdR ? 1 : 0,
-            newVector.y > thresholdG ? 1 : 0,
-            newVector.z > thresholdB ? 1 : 0,
-            1);
-    }
-}
+// --------------------------------------------------------------------------------------
+// Functions
+// --------------------------------------------------------------------------------------
 
 void insertSort(out float neighbours[MaxArraySize], uint length)
-{    
+{
     float value;
     uint i, j;
-    for(i = 1; i < length; i++)
+    for (i = 1; i < length; i++)
     {
         value = neighbours[i];
         for (j = i - 1; j >= 0 && neighbours[j] > value; j--)
@@ -158,19 +135,136 @@ void GetMask(uint3 id, out float neighbours[MaxArraySize], uint radius)
     }
 }
 
+float GetMaskLength()
+{
+    return MaskRadius * 2 + 1;
+}
+
+float GetIndex(int x, int y)
+{
+    return (x + y * GetMaskLength());
+}
+
+// --------------------------------------------------------------------------------------
+// Thresholding
+// --------------------------------------------------------------------------------------
+
+// Thresholding
+// Is gray
+bool avg;
+
+// Thresholding gray
+float thresholdAVG;
+
+// Thresholding color
+float thresholdR;
+float thresholdG;
+float thresholdB;
+
+[numthreads(8, 8, 1)]
+void Thresholding(uint3 id : SV_DispatchThreadID)
+{
+    float4 newVector = Input[id.xy];
+    float a = newVector.x + newVector.y + newVector.z;
+    if (avg)
+    {
+        a /= 3;
+        a = a > thresholdAVG ? 1 : 0;
+        Result[id.xy] = float4(a, a, a, 1);
+    }
+    else
+    {
+        Result[id.xy] = float4(
+            newVector.x > thresholdR ? 1 : 0,
+            newVector.y > thresholdG ? 1 : 0,
+            newVector.z > thresholdB ? 1 : 0,
+            1);
+    }
+}
+
+
+// --------------------------------------------------------------------------------------
+// Niblack
+// --------------------------------------------------------------------------------------
+
+// NiBlack Thresholding
+float NiblackVar;
+
 [numthreads(1, 1, 1)]
 void Niblack(uint3 id : SV_DispatchThreadID)
 {
     float neighbours[MaxArraySize] = (float[MaxArraySize])0;
 
     // Extract the neighbourhood area
-    GetMask(id, neighbours, MaskRadius);
+    //GetMask(id, neighbours, MaskRadius);
+    uint k = 0;
+    for (int x = (int)id.x - MaskRadius; x <= (int)(id.x + MaskRadius); x++)
+    {
+        for (int y = (int)id.y - MaskRadius; y <= (int)(id.y + MaskRadius); y++)
+        {
+            if (x < 0 || x >= (int)(imageSize.x) ||
+                y < 0 || y >= (int)(imageSize.y))
+            {
+                neighbours[k++] = 0;
+            }
+            else
+            {
+                float4 newVector = Input[uint2(x, y)];
+                neighbours[k++] = (newVector.x + newVector.y + newVector.z) / 3;
+            }
+        }
+    }
 
-    // Calculate the mean and standard deviation of the neighbourhood region
     uint length = MaskRadius * 2 + 1;
     length *= length;
-    float wBmn = Median(neighbours, length);
-    float wBstd = standardDeviation(neighbours, length);
+
+    // Calculate Median
+    //float wBmn = Median(neighbours, length);
+    float wBmn;
+    if (length == 0)
+        wBmn = 0;
+    else
+    {
+        //insertSort(neighbours, length);
+        float value;
+        uint i, j;
+        for (i = 1; i < length; i++)
+        {
+            value = neighbours[i];
+            for (j = i - 1; j >= 0 && neighbours[j] > value; j--)
+                neighbours[j + 1] = neighbours[j];
+            neighbours[j + 1] = value;
+        }
+
+        int halfIndex = length / 2;
+
+        if (length % 2 == 0)
+            wBmn = (neighbours[halfIndex] + neighbours[halfIndex - 1]) / 2.0;
+        else
+            wBmn = neighbours[halfIndex];
+    }
+
+    // Calculate Standard deviation
+    //float wBstd = standardDeviation(neighbours, length);
+    float wBstd = 0;
+    if (length > 0)
+    {
+        float average = 0;// Average(sequence, length);
+        for (uint i = 0; i < length; i++)
+        {
+            average += neighbours[i];
+        }
+        average /= length;
+
+        //float sum = SumFormSD(sequence, length);
+        float sum = 0;
+        for (uint i = 0; i < length; i++)
+        {
+            sum += pow(neighbours[i] - average, 2);
+        }
+
+        wBstd = sqrt(sum / length);
+    }
 
     // Calculate the threshold value
     float wBTH = (wBmn + NiblackVar * wBstd);
@@ -180,9 +274,14 @@ void Niblack(uint3 id : SV_DispatchThreadID)
     float a = newVector2.x + newVector2.y + newVector2.z;
     a /= 3;
     a = a > wBTH ? 1 : 0;
+
+    // Set pixel
     Result[id.xy] = float4(a, a, a, 1);
 }
 
+// --------------------------------------------------------------------------------------
+// MedianF
+// --------------------------------------------------------------------------------------
 [numthreads(1, 1, 1)]
 void MedianF(uint3 id : SV_DispatchThreadID)
 {
@@ -190,10 +289,106 @@ void MedianF(uint3 id : SV_DispatchThreadID)
 
     // Extract the neighbourhood area
     GetMask(id, neighbours, MaskRadius);
-    
+
     uint length = MaskRadius * 2 + 1;
     length *= length;
+    // Calculate median
     float med = Median(neighbours, length);
-    
+
+    // Set pixel
     Result[uint2(id.x, id.y)] = float4(med, med, med, 1);
 }
+
+// --------------------------------------------------------------------------------------
+// LoGF
+// --------------------------------------------------------------------------------------
+
+// LoG filter standard deviation
+bool GlobalSTD;
+RWStructuredBuffer<float> LoGFMask;
+float LoGFVar;
+
+[numthreads(1, 1, 1)]
+void LoGF(uint3 id : SV_DispatchThreadID)
+{
+    float neighbours[MaxArraySize] = (float[MaxArraySize])0;
+
+    // Extract the neighbourhood area
+    uint k = 0;
+    for (int x = (int)id.x - MaskRadius; x <= (int)(id.x + MaskRadius); x++)
+    {
+        for (int y = (int)id.y - MaskRadius; y <= (int)(id.y + MaskRadius); y++)
+        {
+            if (x < 0 || x >= (int)(imageSize.x) ||
+                y < 0 || y >= (int)(imageSize.y))
+            {
+                neighbours[k++] = 0;
+            }
+            else
+            {
+                float4 newVector = Input[uint2(x, y)];
+                neighbours[k++] = (newVector.x + newVector.y + newVector.z) / 3;
+            }
+        }
+    }
+
+    uint length = MaskRadius * 2 + 1;
+    length *= length;
+    // Calculate Standard deviation
+    float wBstd = 0;
+    if (length > 0)
+    {
+        float average = 0;// Average(sequence, length);
+        for (uint i = 0; i < length; i++)
+        {
+            average += neighbours[i];
+        }
+        average /= length;
+
+        //float sum = SumFormSD(sequence, length);
+        float sum = 0;
+        for (uint i = 0; i < length; i++)
+        {
+            sum += pow(neighbours[i] - average, 2);
+        }
+
+        wBstd = sqrt(sum / length);
+    }
+
+    // Multiply by mask
+    float result = 0;
+    for (int x = (int)id.x - MaskRadius; x <= (int)(id.x + MaskRadius); x++)
+    {
+        for (int y = (int)id.y - MaskRadius; y <= (int)(id.y + MaskRadius); y++)
+        {
+            if (!(x < 0 || x >= (int)(imageSize.x) ||
+                y < 0 || y >= (int)(imageSize.y)))
+            {
+                float4 newVector = Input[uint2(x, y)];
+                float avg = (newVector.x + newVector.y + newVector.z) / 3;
+                float maskValue;
+                if (GlobalSTD)
+                {
+                    maskValue = LoGFMask[GetIndex(x - (int)id.x + MaskRadius, y - (int)id.y + MaskRadius)];
+                }
+                else
+                {
+                    int lx = x - (int)id.x;
+                    int ly = y - (int)id.y;
+                    float tmp = (lx * lx + ly * ly) / (2 * wBstd * wBstd);
+                    maskValue = -(1 / (PI * pow(wBstd, 4))) * (1 - tmp) * exp(-tmp);
+                }
+
+                result += avg * maskValue;
+            }
+        }
+    }
+
+    // Set pixel
+    Result[id.xy] = float4(result, result, result, 1);
+}
+
+
+
+
+

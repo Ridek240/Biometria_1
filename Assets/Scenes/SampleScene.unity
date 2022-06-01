@@ -238,18 +238,30 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: c3859b510886dd643bd7b1f45a3d9b3f, type: 3}
   renderTexture: {fileID: 0}
   renderTexture2: {fileID: 0}
-  texture: {fileID: 2800000, guid: 0704dc29f875fc045b5181bf04457ccc, type: 3}
+  texture: {fileID: 2800000, guid: 883a5f5faa19e474797fd16ae36b91f7, type: 3}
   Camera: {fileID: 519420031}
   MaskRadius: 1
-  Threshold: 0
-  AVG: 0
-  NiBlack: 0
-  MedianF: 1
-  ThresholdAVG: 0.5
-  ThresholdR: 0.5
-  ThresholdG: 0.5
-  ThresholdB: 0.5
-  NiBlackThreshold: -0.2
+  MedianF: 0
+  LoGF: 0
+  Threshold:
+    IsActive:
+      Value: 0
+    RedThreshold:
+      Value: 0.5
+    GreenThreshold:
+      Value: 0.5
+    BlueThreshold:
+      Value: 0.5
+    IsAVG:
+      Value: 0
+    AVGThreshold:
+      Value: 0.5
+  NiBlack:
+    IsActive:
+      Value: 0
+    Threshold:
+      Value: 0
+  LoGFilter: 1.4
 --- !u!4 &1579608035
 Transform:
   m_ObjectHideFlags: 0
